@@ -1,14 +1,14 @@
-.PHONY: all clean deps build volume wifi iface openconnect install dir copy
+.PHONY: all clean deps build volume wifi iface openconnect battery install dir copy
 
 all: clean build
 
 clean:
-	rm -f volume wifi iface openconnect
+	rm -f volume wifi iface openconnect battery
 
 deps:
 	go get -t ./...
 
-build: volume wifi iface openconnect
+build: volume wifi iface openconnect battery
 
 volume:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' ./cmd/volume/
@@ -22,6 +22,9 @@ iface:
 openconnect:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' ./cmd/openconnect/
 
+battery:
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' ./cmd/battery/
+
 install: build dir copy
 
 dir:
@@ -32,3 +35,4 @@ copy:
 	cp wifi ~/.config/i3blocks/blocklets/go
 	cp iface ~/.config/i3blocks/blocklets/go
 	cp openconnect ~/.config/i3blocks/blocklets/go
+	cp battery ~/.config/i3blocks/blocklets/go
