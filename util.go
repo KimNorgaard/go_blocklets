@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-func getGreenToRed(pct int) string {
+func GreenToRed(pct int) string {
 	var r, g float64
 
 	pctFloat := float64(pct)

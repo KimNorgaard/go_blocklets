@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	gobl "github.com/KimNorgaard/go_blocklets"
+	gb "github.com/KimNorgaard/go_blocklets"
 )
 
 func wifi(wlIf string) (int, error) {
@@ -84,7 +84,7 @@ func main() {
 		output = wlIf
 		colorText = "#FF0000"
 	} else {
-		colorText = gobl.getGreenToRed(quality)
+		colorText = gb.GreenToRed(quality)
 	}
 
 	fullText = output

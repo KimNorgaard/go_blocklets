@@ -11,7 +11,7 @@ import (
 
 	"os/exec"
 
-	gobl "github.com/KimNorgaard/go_blocklets"
+	gb "github.com/KimNorgaard/go_blocklets"
 )
 
 // volume queries the amixer command
@@ -73,7 +73,6 @@ func volume() (int, error) {
 }
 
 func main() {
-
 	// Set display texts to defaults.
 	var output string
 	var fullText string = "unknown"
@@ -98,7 +97,7 @@ func main() {
 		colorText = "#FF0000"
 	} else {
 		output = fmt.Sprintf("%3d%%", vol)
-		colorText = gobl.getGreenToRed(vol)
+		colorText = gb.GreenToRed(vol)
 	}
 
 	fullText = output
