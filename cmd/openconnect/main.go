@@ -34,12 +34,12 @@ func getPid() (int, error) {
 }
 
 func isRunning(pid int) (bool, error) {
-	procDir := fmt.Sprintf("/proc/%d", pid)
-	if _, err := os.Stat(procDir); os.IsNotExist(err) {
+	fileName := fmt.Sprintf("/proc/%d/cmdline", pid)
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		return false, nil
 	}
 
-	cmdline, err := ioutil.ReadFile(procDir + "/cmdline")
+	cmdline, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return false, err
 	}
@@ -52,12 +52,10 @@ func isRunning(pid int) (bool, error) {
 }
 
 func main() {
-
-	// Set display texts to defaults.
-	var output string = ""
+	var output string
 	var fullText string = "unknown"
 	var shortText string = "unknown"
-	var colorText string = "#FF0000"
+	var colorText string
 
 	pid, err := getPid()
 	if err != nil {
@@ -76,6 +74,9 @@ func main() {
 	if active {
 		colorText = "#00FF00"
 		output = ""
+	} else {
+		colorText = "#FF0000"
+		output = ""
 	}
 
 	fullText = output

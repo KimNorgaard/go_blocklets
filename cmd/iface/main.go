@@ -4,28 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
+
+	gb "github.com/KimNorgaard/go_blocklets"
 )
 
-func iface(ifName string) (string, bool, error) {
-	var ifDir = fmt.Sprintf("/sys/class/net/%s", ifName)
-
-	if _, err := os.Stat(ifDir); os.IsNotExist(err) {
-		return "", false, nil
-	}
-
-	operState, err := ioutil.ReadFile(ifDir + "/operstate")
-	if err != nil {
-		return "", false, err
-	}
-
-	return strings.TrimSpace(string(operState)), true, nil
-}
-
-func getDefaultInterface() (string, error) {
+func getDefaultInterface() (ifName string, err error) {
 	cmd := exec.Command("ip", "route")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -38,16 +24,15 @@ func getDefaultInterface() (string, error) {
 		text := scanner.Text()
 
 		if strings.HasPrefix(text, "default") {
-			return strings.Fields(text)[4], nil
+			ifName = strings.Fields(text)[4]
+			break
 		}
 	}
 
-	return "", nil
+	return ifName, nil
 }
 
 func main() {
-
-	// Set display texts to defaults.
 	var output string
 	var fullText string = "unknown"
 	var shortText string = "unknown"
@@ -63,26 +48,23 @@ func main() {
 		}
 	}
 
-	if ifName == "" {
+	if len(ifName) == 0 {
 		fmt.Print("----")
 		fmt.Print("----")
 		fmt.Print("#AAAAAA")
 		os.Exit(0)
 	}
 
-	// Retrieve current iface info
-	state, ifExists, err := iface(ifName)
+	status, err := gb.GetIfaceStatus(ifName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[i3blocks iface] Failed to get info: %s", err.Error())
 		fmt.Fprintf(os.Stdout, "%s\n%s\n", fullText, shortText)
 		os.Exit(0)
 	}
 
-	if !ifExists {
+	if status == gb.IfStatusNonExistant {
 		os.Exit(0)
-	}
-
-	if state == "up" {
+	} else if status == gb.IfStatusUp {
 		colorText = "#00FF00"
 	} else {
 		colorText = "#FF0000"

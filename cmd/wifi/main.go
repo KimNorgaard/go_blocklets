@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -11,86 +10,71 @@ import (
 	gb "github.com/KimNorgaard/go_blocklets"
 )
 
-func wifi(wlIf string) (int, error) {
-	// wifi quality
-	var quality int = 0
+func getWifiQuality(ifName string) (int, error) {
+	var quality float64
 
-	var ifDir = fmt.Sprintf("/sys/class/net/%s", wlIf)
-	if _, err := os.Stat(ifDir + "/wireless"); os.IsNotExist(err) {
-		return 0, err
-	}
-
-	operState, err := ioutil.ReadFile(ifDir + "/operstate")
+	f, err := os.Open("/proc/net/wireless")
 	if err != nil {
 		return 0, err
 	}
+	defer f.Close()
 
-	// Interface is down, exit normally
-	if string(operState) == "down\n" {
-		return -1, nil
-	}
-
-	wlInfoF, err := os.Open("/proc/net/wireless")
-	if err != nil {
-		return 0, err
-	}
-	defer wlInfoF.Close()
-
-	scanner := bufio.NewScanner(wlInfoF)
+	scanner := bufio.NewScanner(f)
 
 	for scanner.Scan() {
 		text := scanner.Text()
 
-		if strings.Contains(text, wlIf) {
+		if strings.Contains(text, ifName) {
 			fields := strings.Fields(text)
-			qualifyF, err := strconv.ParseFloat(fields[2], 64)
-			quality = int(qualifyF)
-			if err != nil {
+			if quality, err = strconv.ParseFloat(fields[2], 64); err != nil {
 				return 0, err
 			}
-			return quality, nil
 			break
 		}
 	}
 
-	return quality, nil
+	return int(quality), nil
 }
 
 func main() {
-
-	// Set display texts to defaults.
 	var output string
 	var fullText string = "unknown"
 	var shortText string = "unknown"
-	var colorText string = "#19C500"
+	var colorText string
 
-	var wlIf = os.Getenv("BLOCK_INSTANCE")
-	if len(wlIf) == 0 {
-		wlIf = "wlan0"
+	ifName := os.Getenv("BLOCK_INSTANCE")
+	if len(ifName) == 0 {
+		ifName = "wlan0"
 	}
 
-	// Retrieve current WIFI info
-	quality, err := wifi(wlIf)
+	status, err := gb.GetIfaceStatus(ifName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[i3blocks wifi] Failed to get info: %s", err.Error())
 		fmt.Fprintf(os.Stdout, "%s\n%s\n", fullText, shortText)
 		os.Exit(0)
 	}
 
-	output = fmt.Sprintf("%3d%%", quality)
-
-	// Interface down. Exit cleanly.
-	if quality == -1 {
-		output = wlIf
+	if status == gb.IfStatusNonExistant {
+		os.Exit(0)
+	} else if status == gb.IfStatusDown {
+		output = ifName
 		colorText = "#FF0000"
 	} else {
+		quality, err := getWifiQuality(ifName)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[i3blocks wifi] Failed to get info: %s", err.Error())
+			fmt.Fprintf(os.Stdout, "%s\n%s\n", fullText, shortText)
+			os.Exit(0)
+		}
+
+		output = fmt.Sprintf("%3d%%", quality)
 		colorText = gb.GreenToRed(quality)
 	}
 
 	fullText = output
 	shortText = output
 
-	// Write out gathered information to STDOUT.
 	fmt.Fprintf(os.Stdout, "%s\n%s\n%s\n", fullText, shortText, colorText)
 	os.Exit(0)
 }
