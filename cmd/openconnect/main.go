@@ -72,11 +72,7 @@ func main() {
 	}
 
 	if active {
-		colorText = "#00FF00"
-		output = ""
-	} else {
-		colorText = "#FF0000"
-		output = ""
+		output = "vpn"
 	}
 
 	fullText = output

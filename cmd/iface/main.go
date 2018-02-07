@@ -49,9 +49,8 @@ func main() {
 	}
 
 	if len(ifName) == 0 {
-		fmt.Print("----")
-		fmt.Print("----")
-		fmt.Print("#AAAAAA")
+		fmt.Fprintf(os.Stderr, "[i3blocks iface] no default interface found")
+		fmt.Fprintf(os.Stdout, "%s\n%s\n", fullText, shortText)
 		os.Exit(0)
 	}
 
@@ -65,12 +64,9 @@ func main() {
 	if status == gb.IfStatusNonExistant {
 		os.Exit(0)
 	} else if status == gb.IfStatusUp {
-		colorText = "#00FF00"
-	} else {
-		colorText = "#FF0000"
+		output = ifName
 	}
 
-	output = ifName
 	fullText = output
 	shortText = output
 

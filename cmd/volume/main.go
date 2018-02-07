@@ -10,8 +10,6 @@ import (
 	"strings"
 
 	"os/exec"
-
-	gb "github.com/KimNorgaard/go_blocklets"
 )
 
 func getVolume() (int, error) {
@@ -66,11 +64,9 @@ func main() {
 	}
 
 	if vol == -1 {
-		output = "MUTE"
-		colorText = "#FF0000"
+		output = "----"
 	} else {
-		output = fmt.Sprintf("%3d%%", vol)
-		colorText = gb.GreenToRed(vol)
+		output = fmt.Sprintf("%02d%%", vol)
 	}
 
 	fullText = output

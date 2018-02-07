@@ -56,10 +56,7 @@ func main() {
 
 	if status == gb.IfStatusNonExistant {
 		os.Exit(0)
-	} else if status == gb.IfStatusDown {
-		output = ifName
-		colorText = "#FF0000"
-	} else {
+	} else if status == gb.IfStatusUp {
 		quality, err := getWifiQuality(ifName)
 
 		if err != nil {
@@ -68,13 +65,18 @@ func main() {
 			os.Exit(0)
 		}
 
-		output = fmt.Sprintf("%3d%%", quality)
-		colorText = gb.GreenToRed(quality)
+		if quality < 50 {
+			colorText = gb.GreenToRed(quality)
+			output = fmt.Sprintf("%s <span color='%s'>%02d%%</span>", ifName, colorText, quality)
+		} else {
+			output = fmt.Sprintf("%s %02d%%", ifName, quality)
+		}
+
 	}
 
 	fullText = output
 	shortText = output
 
-	fmt.Fprintf(os.Stdout, "%s\n%s\n%s\n", fullText, shortText, colorText)
+	fmt.Fprintf(os.Stdout, "%s\n%s\n", fullText, shortText)
 	os.Exit(0)
 }
