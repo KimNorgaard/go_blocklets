@@ -57,6 +57,7 @@ func StringFromFile(fileName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer fh.Close()
 	b, err := ioutil.ReadAll(fh)
 	if err != nil {
 		return "", err
